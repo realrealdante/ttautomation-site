@@ -1,0 +1,241 @@
+// Thrive Trade Automation (preview v1). Static, no tracking.
+(function () {
+  var y = document.getElementById('year');
+  if (y) y.textContent = new Date().getFullYear();
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  window.scrollTo(0, 0);
+
+  // In-page links scroll smoothly without adding #section to the URL
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var id = a.getAttribute('href').slice(1);
+    var t = id ? document.getElementById(id) : null;
+    if (!t) return;
+    e.preventDefault();
+    var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (window.thriveScrollTo && !rm) window.thriveScrollTo(t);
+    else t.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' });
+    if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+    t.focus({ preventScroll: true });
+  });
+
+  // Enquiry form -> opens an SMS to Kewin, prefilled (no email/back end yet)
+  var PHONE = '0492300404', SEP = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) ? '&' : '?';
+  var sms = document.getElementById('sms-link');
+  if (sms) sms.href = 'sms:' + PHONE + SEP + 'body=' + encodeURIComponent("Hi Kewin, I'd like to chat about getting help with AI tools for my business.");
+  var form = document.getElementById('contact-form');
+  if (form) form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    var v = function (n) { return (form.elements[n] && form.elements[n].value || '').trim(); };
+    var body = 'Hi Kewin, ' + v('name') + ' here' + (v('trade') ? ' (' + v('trade') + ')' : '') + '. I\u2019d like help with: ' + v('help') + '.' + (v('message') ? ' ' + v('message') : '');
+    location.href = 'sms:' + PHONE + SEP + 'body=' + encodeURIComponent(body);
+  });
+})();
+
+// Variant B living background (v12, perf pass v13). One fixed photo layer sits behind the whole page;
+// the six photos dissolve one into the next across the full page scroll (slow scroll = slow dissolve,
+// scrolling back reverses). Earlier photos stay opaque underneath, so there is never a dark dip.
+// v13: a blurred placeholder covers the first photo until it has decoded, then dissolves (no rough pop-in); the other
+// photos are only un-hidden (so their lazy <img> starts loading) after the first is showing, one or two
+// ahead of the scroll position; will-change only on the pair being crossfaded; opacity only, no zoom.
+(function () {
+  var root = document.querySelector('.slideshow');
+  if (!root) return;
+  var slides = [].slice.call(root.querySelectorAll('.slide')), N = slides.length;
+  var imgs = slides.map(function (s) { return s.querySelector('img'); });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var de = document.documentElement;
+
+  // 1. First photo: drop the placeholder once the photo is fully decoded (CSS skips the fade under reduced motion)
+  var first = imgs[0], firstShown = false, loaded = document.readyState === 'complete', after = [];
+  function shown() { if (firstShown) return; firstShown = true; root.querySelector('.slides').classList.add('is-in'); setTimeout(go, reduce ? 0 : 550); }
+  function go() { while (after.length) after.shift()(); }
+  function whenReady(fn) { if (firstShown && loaded) fn(); else after.push(fn); }
+  if (first) {
+    var dec = function () { (first.decode ? first.decode() : Promise.resolve()).then(shown, shown); };
+    if (first.complete && first.naturalWidth) dec(); else { first.addEventListener('load', dec); first.addEventListener('error', shown); }
+  }
+  window.addEventListener('load', function () { loaded = true; if (firstShown) go(); });
+
+  if (reduce || N < 2) return; // static first photo behind the hero
+
+  var max = 1, vh = 1, ticking = false, last = [], wc = [], ready = false;
+  function measure() { vh = window.innerHeight; max = Math.max(1, de.scrollHeight - vh); }
+  function clamp(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+
+  function frame() {
+    ticking = false;
+    var y = window.scrollY, s = clamp(y / max) * (N - 1), top = 0, k = Math.floor(s);
+    // un-hide (= start loading) each photo about half a photo-length before its dissolve begins
+    if (ready) for (var h = 1; h < N && h <= Math.floor(s + 1.3); h++) if (slides[h].hidden) slides[h].hidden = false;
+    for (var i = 1; i < N; i++) {
+      var o = clamp((s - (i - 1) - 0.2) / 0.6); // hold each photo a little, then dissolve
+      o = o * o * (3 - 2 * o);                  // smoothstep
+      if (o !== last[i]) { slides[i].style.opacity = o; last[i] = o; }
+      if (o === 1 && imgs[i].complete && imgs[i].naturalWidth) top = i;
+    }
+    for (var j = 0; j < N; j++) {
+      var v = j < top ? 'hidden' : '', w = (j === k || j === k + 1) && j > 0 ? 'opacity' : 'auto';
+      if (slides[j].style.visibility !== v) slides[j].style.visibility = v;
+      if (wc[j] !== w) { slides[j].style.willChange = w; wc[j] = w; }
+    }
+    root.style.setProperty('--dim', clamp(y / (vh * 0.9)).toFixed(3));
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  imgs.forEach(function (img) { img.addEventListener('load', onScroll); });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () { measure(); onScroll(); }, { passive: true });
+  whenReady(function () {
+    measure(); ready = true;
+    var next = function () { if (slides[1].hidden) slides[1].hidden = false; onScroll(); };
+    if (window.requestIdleCallback) requestIdleCallback(next, { timeout: 1500 }); else setTimeout(next, 200);
+  });
+  measure();
+  frame();
+})();
+
+/* ==== v10 UI motion & polish (progressive enhancement, no libraries) ====
+   Reveals, header frost, nav scrollspy, live field ticks.
+   No JS / reduced motion = page exactly as before. Hook above: is-loading. */
+(function () {
+  var d = document, w = window, de = d.documentElement;
+  de.classList.add('js');
+  var reduce = w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var each = function (sel, fn) { [].forEach.call(d.querySelectorAll(sel), fn); };
+
+  // 1. Scroll reveal, once each; only below-the-fold elements are hidden; batches stagger 70ms
+  if (!reduce && 'IntersectionObserver' in w) {
+    var io = new IntersectionObserver(function (es) {
+      es.filter(function (e) { return e.isIntersecting; })
+        .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left; })
+        .forEach(function (e, i) {
+          var el = e.target, t = Math.min(i, 6) * 70;
+          io.unobserve(el);
+          el.style.setProperty('--rv-d', t + 'ms');
+          el.classList.add('rv-in');
+          setTimeout(function () { el.classList.remove('rv', 'rv-in'); el.style.removeProperty('--rv-d'); }, t + 800);
+        });
+    }, { threshold: 0.12 });
+    var vh = w.innerHeight;
+    each('.section-head > *, .rows li, .statement .wrap > *, .steps3 li, .narrow > *, .contact-info > *, .form', function (el) {
+      if (el.getBoundingClientRect().top < vh) return;
+      el.classList.add('rv');
+      io.observe(el);
+    });
+  }
+
+  // 2. Header frost + scrollspy: one rAF-throttled passive listener
+  var header = d.querySelector('.site-header');
+  var nav = d.querySelector('.nav'), links = nav ? [].slice.call(nav.querySelectorAll('a[href^="#"]')) : [];
+  var secs = links.map(function (a) { return d.getElementById(a.getAttribute('href').slice(1)); });
+  var ink = null, active = null, headH = 64, ticking = false;
+  if (links.length) {
+    ink = nav.appendChild(d.createElement('span'));
+    ink.className = 'nav-ink';
+    ink.setAttribute('aria-hidden', 'true');
+  }
+  function measure() {
+    if (header) headH = header.offsetHeight;
+  }
+  function spy() {
+    var line = headH + w.innerHeight * 0.3, cur = null;
+    secs.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= line) cur = links[i]; });
+    if (w.innerHeight + w.scrollY >= de.scrollHeight - 2) cur = links[links.length - 1];
+    if (cur === active) return;
+    if (active) { active.classList.remove('is-active'); active.removeAttribute('aria-current'); }
+    active = cur;
+    nav.classList.toggle('has-active', !!cur);
+    if (!cur) return;
+    cur.classList.add('is-active');
+    cur.setAttribute('aria-current', 'location');
+    ink.style.width = cur.offsetWidth + 'px';
+    ink.style.transform = 'translateX(' + cur.offsetLeft + 'px)';
+  }
+  function frame() {
+    ticking = false;
+    var y = w.scrollY;
+    if (header) { header.classList.toggle('is-scrolled', y > 10); header.classList.toggle('is-far', y > w.innerHeight * 0.6); }
+    if (ink) spy();
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  w.addEventListener('scroll', onScroll, { passive: true });
+  w.addEventListener('resize', function () { measure(); active = null; onScroll(); }, { passive: true });
+  w.addEventListener('load', measure);
+  measure();
+  frame();
+
+  // 3. Live fields: tick when valid; invalid only after blur + non-empty. Visual only.
+  var form = d.getElementById('contact-form');
+  if (form) {
+    var ok = function (el) {
+      var v = el.value.trim();
+      if (!v) return false;
+      if (el.type === 'tel') return v.replace(/\D/g, '').length >= 8;
+      return el.validity.valid;
+    };
+    var check = function (el, blur) {
+      var f = el.parentNode, v = ok(el);
+      f.classList.toggle('is-valid', v);
+      if (blur || f.classList.contains('is-invalid')) f.classList.toggle('is-invalid', !v && !!el.value.trim());
+    };
+    [].forEach.call(form.querySelectorAll('.field input'), function (el) {
+      el.addEventListener('input', function () { check(el); });
+      el.addEventListener('blur', function () { check(el, 1); });
+    });
+    form.addEventListener('reset', function () {
+      setTimeout(function () { each('#contact-form .field', function (f) { f.classList.remove('is-valid', 'is-invalid'); }); });
+    });
+  }
+
+  // 4. Eased in-page scroll (native smooth scroll covers long jumps in ~300ms, which reads as a jump).
+  //    Used by the anchor + form-note code above; cancelled by wheel/touch/keys.
+  var run = 0;
+  ['wheel', 'touchstart', 'keydown'].forEach(function (t) { w.addEventListener(t, function () { run++; }, { passive: true }); });
+  w.thriveScrollTo = function (el, block) {
+    var r = el.getBoundingClientRect(), from = w.scrollY;
+    var to = block === 'center' ? from + r.top - (w.innerHeight - r.height) / 2 : from + r.top - (parseFloat(getComputedStyle(de).scrollPaddingTop) || 0);
+    to = Math.max(0, Math.min(to, de.scrollHeight - w.innerHeight));
+    var dist = to - from, dur = Math.min(1100, 400 + Math.abs(dist) * 0.2), t0 = 0, id = ++run;
+    de.style.scrollBehavior = 'auto';
+    requestAnimationFrame(function f(t) {
+      if (id !== run) { de.style.scrollBehavior = ''; return; }
+      t0 = t0 || t;
+      var k = Math.min(1, (t - t0) / dur);
+      w.scrollTo(0, from + dist * (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(2 - 2 * k, 3) / 2));
+      if (k < 1) requestAnimationFrame(f); else de.style.scrollBehavior = '';
+    });
+  };
+
+  // 5. Soft reset after a successful send: fade the values out, then reset at the same size
+  w.thriveSoftReset = function (f) {
+    f.classList.add('is-clearing');
+    setTimeout(function () {
+      var ta = f.querySelector('textarea');
+      if (ta) ta.style.height = ta.offsetHeight + 'px';
+      f.reset();
+      setTimeout(function () { f.classList.remove('is-clearing'); }, 60);
+    }, reduce ? 0 : 1200);
+  };
+
+  // 6. Form note grows smoothly (success/error text is taller) instead of jumping the footer
+  var note = d.getElementById('form-note');
+  if (note && !reduce && w.MutationObserver) {
+    var nh = note.offsetHeight;
+    new MutationObserver(function () {
+      var h1 = note.offsetHeight;
+      if (Math.abs(h1 - nh) < 2) return;
+      note.style.cssText = 'height:' + nh + 'px;overflow:hidden';
+      note.offsetHeight; // reflow
+      note.style.transition = 'height .45s cubic-bezier(.2,.8,.2,1)';
+      note.style.height = h1 + 'px';
+      nh = h1;
+      setTimeout(function () { note.style.cssText = ''; }, 500);
+    }).observe(note, { childList: true, subtree: true, characterData: true });
+  }
+
+  // Lets :active feedback fire on cards for iOS touch
+  d.addEventListener('touchstart', function () {}, { passive: true });
+})();
