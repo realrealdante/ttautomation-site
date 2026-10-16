@@ -631,6 +631,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 @media (min-width: 900px) {
   .rows { grid-template-columns: 1fr 1fr; column-gap: 64px; }
   .rows li { grid-template-columns: 200px 1fr; align-items: baseline; gap: 24px; padding: 30px 0; }
+  /* an odd last item would sit alone in the left column; let it close the list full width */
+  .rows li:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 /* statement */
 .statement { text-align: center; }
