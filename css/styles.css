@@ -673,3 +673,21 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
   .js body::after { background: linear-gradient(to top, rgba(0, 0, 0, .8), rgba(0, 0, 0, 0)); }
 }
 .skip { background: #0a5cff; color: #fff; }
+/* Node Leaf mark: same scale as the old 24px tile, no blue plate, aligned to the wordmark */
+.brand img.brand-mark {
+  width: auto;
+  height: 26px;
+  flex: none;
+  display: block;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  object-fit: contain;
+}
+.site-footer .footer-mark {
+  height: 18px;
+  width: auto;
+  display: block;
+  opacity: .5;
+}
+.footer-inner { gap: 12px; }
