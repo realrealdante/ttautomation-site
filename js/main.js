@@ -21,17 +21,67 @@
     t.focus({ preventScroll: true });
   });
 
-  // Enquiry form -> opens an SMS to Kewin, prefilled (no email/back end yet)
+  // Text link still opens a message; the enquiry form itself is sent by FormSubmit below
   var PHONE = '0492300404', SEP = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) ? '&' : '?';
   var sms = document.getElementById('sms-link');
   if (sms) sms.href = 'sms:' + PHONE + SEP + 'body=' + encodeURIComponent("Hi Kewin, I'd like to chat about getting help with AI tools for my business.");
+
+  // Enquiry form -> sent to the business inbox via FormSubmit
+  var EMAIL = 'thriveoutdoorsolutions@gmail.com';
   var form = document.getElementById('contact-form');
-  if (form) form.addEventListener('submit', function (e) {
+  if (!form) return;
+
+  var ENDPOINT = 'https://formsubmit.co/ajax/' + EMAIL;
+  var note = document.getElementById('form-note');
+  var btn = form.querySelector('button[type="submit"], button:not([type])');
+  function show(msg, kind) {
+    if (!note) return;
+    note.innerHTML = msg;
+    note.className = 'fine form-note' + (kind ? ' is-' + kind : '');
+    note.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    if (window.thriveScrollTo && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) window.thriveScrollTo(note, 'center');
+    else note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  var fallback = 'Email <a href="mailto:' + EMAIL + '">' + EMAIL + '</a> or call/text <a href="tel:' + PHONE + '">0492 300 404</a>.';
+
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!form.reportValidity()) return;
     var v = function (n) { return (form.elements[n] && form.elements[n].value || '').trim(); };
-    var body = 'Hi Kewin, ' + v('name') + ' here' + (v('trade') ? ' (' + v('trade') + ')' : '') + '. I\u2019d like help with: ' + v('help') + '.' + (v('message') ? ' ' + v('message') : '');
-    location.href = 'sms:' + PHONE + SEP + 'body=' + encodeURIComponent(body);
+    if (v('_honey')) return; // bot trap
+    if (!v('phone') && !v('email')) {
+      show('Please add a phone number or email so I can get back to you.', 'error');
+      return;
+    }
+    var data = {
+      _subject: 'New enquiry - Thrive Trade Automation website',
+      _template: 'table',
+      _captcha: 'false',
+      Name: v('name'),
+      Phone: v('phone'),
+      Email: v('email'),
+      'Business / trade': v('trade'),
+      'What would you like help with?': v('message')
+    };
+    if (v('email')) data._replyto = v('email');
+    if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = 'Sending…'; btn.classList.add('is-loading'); }
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || String(res.j.success) !== 'true') throw new Error(res.j.message || 'failed');
+        if (window.thriveSoftReset) window.thriveSoftReset(form); else form.reset();
+        show('<strong>✓ Thanks, your enquiry has been sent!</strong> I\'ll be in touch soon. Need me sooner? Call or text <a href="tel:' + PHONE + '">0492 300 404</a>.', 'success');
+        if (btn) { btn.dataset.label = 'Sent ✓'; btn.classList.add('is-sent'); }
+      })
+      .catch(function () {
+        show('Sorry, that didn\'t send. ' + fallback, 'error');
+      })
+      .then(function () {
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'Send enquiry'; btn.classList.remove('is-loading'); }
+      });
   });
 })();
 
