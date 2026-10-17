@@ -170,7 +170,7 @@
         });
     }, { threshold: 0.12 });
     var vh = w.innerHeight;
-    each('.section-head > *, .rows li, .statement .wrap > *, .steps3 li, .narrow > *, .contact-info > *, .form', function (el) {
+    each('.section-head > *, .rows li, .statement .wrap > *, .steps3 li, .narrow > *, .contact-info > *, .direct li, .form, .footer-inner > *', function (el) {
       if (el.getBoundingClientRect().top < vh) return;
       el.classList.add('rv');
       io.observe(el);

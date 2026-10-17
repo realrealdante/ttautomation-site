@@ -701,3 +701,60 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .sister-arrow { display: inline-block; transition: transform .25s cubic-bezier(.2,.8,.2,1); }
 .sister-pill:hover .sister-arrow { transform: translateX(3px); }
 @media (prefers-reduced-motion: reduce) { .sister-pill, .sister-arrow { transition: none; } .sister-pill:hover { transform: none; } }
+
+/* v18: Thrive Outdoor micro-interactions, recoloured to the blue accent.
+   Reveal classes are added by JS only, so no-JS (and reduced motion) shows everything. */
+.brand img.brand-mark { transform-origin: left center; transition: transform .5s var(--ease); }
+.site-header.is-scrolled .brand img.brand-mark { transform: scale(.9); }
+
+.service, .review, .rows li, .steps3 li {
+  transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .4s var(--ease);
+}
+@media (hover: hover) {
+  .service:hover, .review:hover, .rows li:hover, .steps3 li:hover {
+    border-color: rgba(47, 123, 255, .45);
+    box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .75), 0 0 32px -14px rgba(47, 123, 255, .55);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .service:hover, .review:hover, .rows li:hover, .steps3 li:hover { transform: translateY(-3px); }
+}
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .service:active, .review:active, .rows li:active, .steps3 li:active { transform: scale(.99); border-color: rgba(47, 123, 255, .45); }
+}
+
+.btn {
+  transition: background-color .15s, color .15s, border-color .15s, transform .5s var(--spring), box-shadow .35s var(--ease);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px -8px rgba(47, 123, 255, .55), 0 0 0 4px rgba(47, 123, 255, .1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn:active { transform: scale(.96); transition: transform .12s var(--ease), box-shadow .2s var(--ease), background-color .15s; }
+  .btn.is-sent { animation: btnPop .75s var(--ease); }
+}
+@keyframes btnPop {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 123, 255, .6); }
+  30% { transform: scale(1.08); }
+  55% { transform: scale(.98); }
+  75% { transform: scale(1.01); }
+  100% { transform: scale(1); box-shadow: 0 0 0 20px rgba(47, 123, 255, 0); }
+}
+
+.service-foot a, .site-footer .fine a, .form-note a {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size .4s var(--ease), color .15s;
+}
+.service-foot a:hover, .site-footer .fine a:hover, .form-note a:hover { background-size: 100% 1px; }
+
+.js .rv { opacity: 0; translate: 0 24px; }
+.js .rv.rv-in { opacity: 1; translate: none; transition: opacity .7s var(--ease) var(--rv-d, 0ms), translate .7s var(--ease) var(--rv-d, 0ms); }
+@media (prefers-reduced-motion: reduce) {
+  .js .rv, .js .rv.rv-in { opacity: 1; translate: none; transition: none; }
+  .brand img.brand-mark, .site-header.is-scrolled .brand img.brand-mark { transition: none; transform: none; }
+  .service, .review, .rows li, .steps3 li, .btn { transition: none; }
+  .service:hover, .review:hover, .rows li:hover, .steps3 li:hover, .btn:hover, .btn:active { transform: none; }
+  .btn.is-sent { animation: none; }
+}
+@media print { .js .rv { opacity: 1 !important; translate: none !important; } }
