@@ -97,12 +97,7 @@ p { margin: 0; }
 
 /* Services */
 .services { display: grid; gap: 16px; }
-.service {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 28px;
-}
+.service { padding: 28px; }
 .service-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; }
 .service h3 { font-size: 1.2rem; }
 .price { font-size: 1.6rem; font-weight: 700; color: var(--accent); white-space: nowrap; letter-spacing: -0.02em; }
@@ -160,10 +155,7 @@ p { margin: 0; }
 .area .eyebrow { margin-bottom: 8px; }
 
 /* Form */
-.form {
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 24px; display: grid; gap: 16px; align-self: start;
-}
+.form { padding: 24px; display: grid; gap: 16px; align-self: start; }
 .field-row { display: grid; gap: 16px; }
 .field { display: grid; gap: 6px; }
 .field label { font-size: .875rem; font-weight: 500; color: var(--text); }
@@ -236,10 +228,7 @@ p { margin: 0; }
 .rating { display: flex; align-items: center; gap: 10px; font-size: .95rem; }
 .rating strong { font-weight: 700; color: var(--text); }
 .reviews { display: grid; gap: 16px; }
-.review {
-  margin: 0; display: flex; flex-direction: column; gap: 14px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px;
-}
+.review { margin: 0; display: flex; flex-direction: column; gap: 14px; padding: 24px; }
 .review .stars { font-size: .95rem; }
 .review blockquote { margin: 0; color: var(--text); font-size: .975rem; line-height: 1.6; }
 .review figcaption { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; }
@@ -423,15 +412,6 @@ p { margin: 0; }
   .js .section { background: transparent; }
   .js .section-alt { background: rgba(11, 16, 32, .52); }
   .js .site-footer { background: rgba(7, 10, 18, .82); }
-  .js .service, .js .review, .js .form { background: rgba(15, 22, 38, .92); }
-  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    @media (min-width: 640px) { /* frosted glass on larger screens; phones get a near-solid panel (cheaper) */
-      .js .service, .js .review, .js .form {
-        background: rgba(15, 22, 38, .74);
-        -webkit-backdrop-filter: saturate(140%) blur(12px); backdrop-filter: saturate(140%) blur(12px);
-      }
-    }
-  }
 }
 
 /* ==========================================================================
@@ -550,19 +530,6 @@ p { margin: 0; }
 .btn.is-loading::after { border-color: rgba(255, 255, 255, .3); border-top-color: #fff; }
 .skip { background: #1d4ed8; color: #fff; }
 :root { --glow: rgba(37, 99, 235, .45); }
-.js .service, .js .form {
-  border-color: rgba(148, 178, 230, .16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 0 0 1px rgba(255, 255, 255, .02), 0 20px 44px -26px rgba(0, 0, 0, .85);
-  transition: transform .6s var(--spring), box-shadow .5s var(--ease), border-color .4s var(--ease), background-color .4s var(--ease);
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  @media (min-width: 640px) {
-    .js .service, .js .form {
-      background: linear-gradient(160deg, rgba(24, 34, 58, .62), rgba(12, 18, 32, .58));
-      -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px);
-    }
-  }
-}
 @media (hover: hover) {
   .js .service:hover {
     border-color: rgba(76, 201, 255, .38);
@@ -624,8 +591,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .intro { margin-top: 22px; font-size: clamp(1.1rem, 1.8vw, 1.3rem); line-height: 1.5; color: var(--muted); max-width: 40ch; }
 .narrow .intro, .statement .intro { max-width: 46ch; }
 /* hairline rows */
-.rows { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--hair); }
-.rows li { display: grid; gap: 6px; padding: 26px 0; border-bottom: 1px solid var(--hair); }
+.rows { list-style: none; margin: 0; padding: 0; display: grid; }
+.rows li { display: grid; gap: 6px; padding: 26px 0; }
 .rows h3 { font-size: 1.3rem; letter-spacing: -0.02em; }
 .rows p { color: var(--muted); }
 @media (min-width: 900px) {
@@ -642,7 +609,7 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 /* steps */
 .steps3 { list-style: none; margin: 0; padding: 0; display: grid; gap: 48px; }
 .steps3 span { display: block; font-size: .85rem; font-weight: 600; color: #4a90ff; margin-bottom: 14px; letter-spacing: .04em; }
-.steps3 li { border-top: 1px solid var(--hair); padding-top: 28px; }
+.steps3 li { padding-top: 28px; }
 .steps3 h3 { font-size: 1.4rem; margin-bottom: 10px; }
 .steps3 p { color: var(--muted); max-width: 30ch; }
 @media (min-width: 900px) { .steps3 { grid-template-columns: repeat(3, 1fr); gap: 48px; } }
@@ -652,11 +619,7 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.03em; }
 .direct a { border-bottom-color: var(--hair); padding: 18px 0; font-size: 1.15rem; }
 .direct a:hover { color: #4a90ff; }
 .area-note { margin-top: 22px; }
-.js .form, .form { background: rgba(28, 28, 32, .72); border: 1px solid var(--hair); border-radius: 22px; padding: 32px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 30px 60px -30px rgba(0, 0, 0, .9); }
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  @media (min-width: 640px) { .js .form { background: rgba(28, 28, 32, .55); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); } }
-}
+.form { padding: 32px; }
 .field label { color: #d2d2d7; font-weight: 500; font-size: .85rem; }
 .field input, .field select, .field textarea { background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: #2f7bff; box-shadow: 0 0 0 4px rgba(47, 123, 255, .22); }
@@ -795,45 +758,35 @@ a, .accent, .hero h1 .accent, .steps3 span, .direct a:hover, .nav a.is-active { 
 .field::after { background: #9fc2ff; }
 .form-note.is-success { background: rgba(159, 194, 255, .16); border-color: #9fc2ff; color: #f5f5f7; }
 
-/* Frosted cards. The glass sits on ::before so hover/reveal transforms on the
-   card itself cannot flatten the backdrop into sharp corners. */
-.rows { border-top: 0; gap: 14px; }
+/* One frosted card style, on the element itself, from first paint.
+   No earlier fill, no ::before glass layer, no background or backdrop transition. */
+.rows { gap: 14px; }
 .rows li,
 .steps3 li,
 #story .narrow,
-.js .form,
 .form {
-  position: relative;
-  isolation: isolate;
-  background: transparent;
+  background: rgba(255, 255, 255, .08);
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: 22px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .28),
     0 18px 44px -28px rgba(0, 0, 0, .8);
+  -webkit-backdrop-filter: saturate(180%) blur(26px);
+  backdrop-filter: saturate(180%) blur(26px);
+  /* radius clips the glass; overflow keeps that clip through hover/reveal transforms */
+  overflow: hidden;
 }
 .rows li { padding: 22px 22px 20px; align-items: start; }
 .steps3 { gap: 14px; }
 .steps3 li { padding: 22px 22px 24px; }
 #story .narrow { padding: 36px 32px; }
-.js .form,
-.form { border-radius: 22px; }
-.rows li::before,
-.steps3 li::before,
-#story .narrow::before,
-.js .form::before,
-.form::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: rgba(255, 255, 255, .08);
-  -webkit-backdrop-filter: saturate(180%) blur(26px);
-  backdrop-filter: saturate(180%) blur(26px);
-  /* clip the blurred layer itself; a transformed ancestor otherwise paints it square */
-  clip-path: inset(0 round 22px);
+@media (prefers-reduced-motion: no-preference) {
+  .rows li,
+  .steps3 li,
+  #story .narrow,
+  .form {
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .4s var(--ease);
+  }
 }
 @media (min-width: 900px) {
   .rows { column-gap: 16px; row-gap: 16px; }
@@ -859,9 +812,11 @@ a, .accent, .hero h1 .accent, .steps3 span, .direct a:hover, .nav a.is-active { 
   }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .rows li::before,
-  .steps3 li::before,
-  #story .narrow::before,
-  .js .form::before,
-  .form::before { background: rgba(16, 18, 22, .88); }
+  .rows li,
+  .steps3 li,
+  #story .narrow,
+  .form { background: rgba(16, 18, 22, .88); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rows li, .steps3 li, #story .narrow, .form { transition: none; }
 }
